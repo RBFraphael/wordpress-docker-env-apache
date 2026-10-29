@@ -1,0 +1,77 @@
+name: ${SERVICE_NAME}
+
+# Shared by "wordpress" and "cli", so WP-CLI always sees the same wp-config.php values
+x-wordpress-env: &wordpress-env
+  WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+  WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+  WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+  WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+  WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
+  WORDPRESS_CONFIG_EXTRA: |
+    define('WP_DEBUG_LOG', ${WORDPRESS_DEBUG_LOG});
+    define('WP_DEBUG_DISPLAY', ${WORDPRESS_DEBUG_DISPLAY});
+    define('DISABLE_WP_CRON', ${WORDPRESS_DISABLE_CRON});
+    define('WP_HOME', '${WEBSITE_URL}');
+    define('WP_SITEURL', '${WEBSITE_URL}');
+
+services:
+  boot:
+    image: alpine:latest
+    user: "0:0"
+    volumes:
+      - ./www:/var/www/html
+    command: chown -R 1000:1000 /var/www/html
+    networks:
+      - wpnet
+
+  wordpress:
+    image: wordpress:php8.5-apache
+    restart: unless-stopped
+    user: "1000:1000"
+    ports:
+      - "80:80"
+    volumes:
+      - ./www:/var/www/html
+      - ./php/config.ini:/usr/local/etc/php/conf.d/zz-config.ini
+      # - ./php/slowlog.conf:/usr/local/etc/php-fpm.d/z-slowlog.conf:ro # Useful for debugging slow websites
+    environment: *wordpress-env
+    depends_on:
+      boot:
+        condition: service_completed_successfully
+      mariadb:
+        condition: service_started
+    networks:
+      - wpnet
+
+  cli:
+    image: wordpress:cli-php8.5
+    restart: unless-stopped
+    user: "1000:1000"
+    command: tail -f /dev/null # Keeps the container alive for "docker compose exec cli wp ..."
+    volumes:
+      - ./www:/var/www/html
+      - ./php/config.ini:/usr/local/etc/php/conf.d/zz-config.ini
+    environment:
+      <<: *wordpress-env
+      HOME: /tmp # UID 1000 has no home directory; WP-CLI needs one for cache/packages
+    depends_on:
+      wordpress:
+        condition: service_started
+    networks:
+      - wpnet
+
+  mariadb:
+    image: mariadb:latest
+    restart: unless-stopped
+    volumes:
+      - ./database/data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    environment:
+      MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
+    networks:
+      - wpnet
+
+networks:
+  wpnet:
+    driver: bridge

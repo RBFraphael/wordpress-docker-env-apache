@@ -1,0 +1,8 @@
+#!/bin/bash
+# Bridge to the "cli" service (WP-CLI) defined in docker-compose.yaml
+cd "$(dirname "$0")" || exit 1
+
+# Only allocate a TTY when running interactively (e.g. not from crontab)
+[ -t 0 ] && [ -t 1 ] || TTY_FLAG="-T"
+
+exec docker compose exec $TTY_FLAG cli wp "$@"

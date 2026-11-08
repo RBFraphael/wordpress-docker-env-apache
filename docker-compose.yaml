@@ -34,6 +34,9 @@ services:
       - ./www:/var/www/html
       - ./php/config.ini:/usr/local/etc/php/conf.d/zz-config.ini
       # - ./php/slowlog.conf:/usr/local/etc/php-fpm.d/z-slowlog.conf:ro # Useful for debugging slow websites
+    profiles:
+      - local-db
+      - external-db
     environment: *wordpress-env
     depends_on:
       boot:
@@ -66,6 +69,8 @@ services:
     volumes:
       - ./database/data:/var/lib/mysql
       - ./database/init:/docker-entrypoint-initdb.d
+    profiles:
+      - local-db
     environment:
       MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       MYSQL_DATABASE: ${WORDPRESS_DB_NAME}

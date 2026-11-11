@@ -6,7 +6,7 @@ A lightweight and reusable Docker environment for WordPress development and prod
 
 * WordPress with PHP 8.5 and Apache (`wordpress:php8.5-apache`), serving directly on port 80
 * WP-CLI service running on PHP 8.5 (`wordpress:cli-php8.5`) and a helper script
-* MariaDB
+* MySQL
 * Docker Compose based
 * Custom PHP settings (memory limit, upload limits, OPcache) in a single `php/config.ini` file
 * Easy environment configuration through a single `.env` file
@@ -40,9 +40,9 @@ Then edit the newly created `.env` file and update the following values:
 | Variable                     | Description                                                                                                                                                     |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SERVICE_NAME`               | Name of your project. This is used as the Docker Compose project name.                                                                                          |
-| `WORDPRESS_DB_HOST`          | Database host. Use the MariaDB service name, `mariadb`.                                                                                                         |
+| `WORDPRESS_DB_HOST`          | Database host. Use the MySQL service name, `mysql`.                                                                                                         |
 | `WORDPRESS_DB_USER`          | Database user used by WordPress.                                                                                                                                |
-| `WORDPRESS_DB_PASSWORD`      | A strong password for the MariaDB root user.                                                                                                                    |
+| `WORDPRESS_DB_PASSWORD`      | A strong password for the MySQL root user.                                                                                                                    |
 | `WORDPRESS_DB_NAME`          | *(Optional)* Database name. Default: `wordpress_db`.                                                                                                            |
 | `WORDPRESS_DEBUG`            | *(Optional)* Set to `true` to enable WordPress debugging. Default: `false`.                                                                                     |
 | `WORDPRESS_DEBUG_LOG`        | *(Optional)* Sets `WP_DEBUG_LOG` (`true` or `false`).                                                                                                           |
@@ -83,7 +83,7 @@ docker compose restart wordpress cli
 
 ## Database Initialization
 
-On the first startup, the MariaDB container automatically executes any `.sql` files found in the `database/init` directory.
+On the first startup, the MySQL container automatically executes any `.sql` files found in the `database/init` directory.
 
 This is useful for restoring an existing WordPress database or providing an initial dataset for development.
 

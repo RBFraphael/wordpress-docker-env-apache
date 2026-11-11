@@ -41,7 +41,7 @@ services:
     depends_on:
       boot:
         condition: service_completed_successfully
-      mariadb:
+      mysql:
         condition: service_started
     networks:
       - wpnet
@@ -63,8 +63,8 @@ services:
     networks:
       - wpnet
 
-  mariadb:
-    image: mariadb:latest
+  mysql:
+    image: mysql:latest
     restart: unless-stopped
     volumes:
       - ./database/data:/var/lib/mysql
@@ -72,7 +72,7 @@ services:
     profiles:
       - local-db
     environment:
-      MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
     networks:
       - wpnet
